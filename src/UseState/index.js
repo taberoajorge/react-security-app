@@ -17,6 +17,8 @@ function UseState({ name }) {
     value: "",
     error: false,
     loading: false,
+    deleted: false,
+    confirmed: false,
   });
 
   // const [value, setValue] = React.useState("");
@@ -30,46 +32,78 @@ function UseState({ name }) {
         console.log("Haciendo validacion");
 
         if (state.value === SECURITY_CODE) {
-          // setError(false);
+          setState({ ...state, confirmed: true, error: false, loading: false });
         } else {
-          setState({ ...state, error: true });
+          setState({ ...state, error: true, loading: false });
         }
-        setState({ ...state, loading: false });
 
         console.log("Terminando validacion");
       }, 3000);
     }
   }, [state.loading]);
 
-  return (
-    <>
-      <h1>Eliminar {name}</h1>
-      <form onSubmit={(event) => event.preventDefault()}>
-        <label>
-          <span>Por favor escribe el codigo de seguridad</span>
-          {state.error && !state.loading && (
-            <StyledError>Error: El codigo es incorrecto</StyledError>
-          )}
-          {state.loading && <Loading />}
+  if (!state.deleted && !state.confirmed) {
+    return (
+      <>
+        <h1>Eliminar {name}</h1>
+        <form onSubmit={(event) => event.preventDefault()}>
+          <label>
+            <span>Por favor escribe el codigo de seguridad</span>
+            {state.error && !state.loading && (
+              <StyledError>Error: El codigo es incorrecto</StyledError>
+            )}
+            {state.loading && <Loading />}
+            <input
+              onChange={(event) => {
+                setState({ ...state, value: event.target.value });
+              }}
+              value={state.value}
+              type="text"
+              placeholder="Codigo de seguridad"
+            />
+          </label>
           <input
-            onChange={(event) => {
-              setState({ ...state, value: event.target.value });
+            onClick={() => {
+              setState({ ...state, loading: true });
             }}
-            value={state.value}
-            type="text"
-            placeholder="Codigo de seguridad"
+            type="submit"
+            value="Comprobar"
           />
-        </label>
-        <input
-          onClick={() => {
-            setState({ ...state, loading: true, error: false });
-          }}
-          type="submit"
-          value="Comprobar"
-        />
-      </form>
-    </>
-  );
+        </form>
+      </>
+    );
+  } else if (!state.deleted && state.confirmed) {
+    return (
+      <React.Fragment>
+        <h1 style={{ color: "white" }}>
+          Estas segurx que quieres hacer este cambio?
+        </h1>
+        <div>
+          <button
+            onClick={() => setState({ ...state, confirmed: false, value: "" })}
+          >
+            No, disculpa dios
+          </button>
+          <button onClick={() => setState({ ...state, deleted: true })}>
+            Si, totalmente si
+          </button>
+        </div>
+      </React.Fragment>
+    );
+  } else {
+    return (
+      <>
+        <h1 style={{ color: "white" }}>Eliminado con exito</h1>
+        <button
+          onClick={() =>
+            setState({ ...state, confirmed: false, value: "", deleted: false })
+          }
+        >
+          Regresar, volver atras.
+        </button>
+      </>
+    );
+  }
 }
 
 export { UseState };
